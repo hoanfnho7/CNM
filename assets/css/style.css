@@ -1,0 +1,76 @@
+/* QR Code Styles */
+.qr-code-section {
+  margin-top: 20px;
+}
+
+.qr-code-container {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  display: inline-block;
+  border: 2px dashed #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.qr-code-container:hover {
+  border-color: #007bff;
+  background: #e3f2fd;
+}
+
+.qr-code-image {
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.qr-code-image:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive QR Code */
+@media (max-width: 768px) {
+  .qr-code-image {
+    max-width: 150px;
+  }
+
+  .qr-code-container {
+    padding: 10px;
+  }
+}
+
+/* QR Code Animation */
+@keyframes qr-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.qr-code-container:hover .qr-code-image {
+  animation: qr-pulse 2s infinite;
+}
+
+/* QR Code Card Styling */
+.qr-code-section .card {
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.qr-code-section .card-header {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-radius: 12px 12px 0 0 !important;
+  border: none;
+}
+
+.qr-code-section .card-header h6 {
+  font-weight: 600;
+}
