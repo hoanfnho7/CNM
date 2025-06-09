@@ -3,14 +3,14 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if not logged in
+// Chuyển hướng nếu chưa đăng nhập
 if (!isLoggedIn()) {
     redirect('login.php');
 }
 
 $user_id = $_SESSION['user_id'];
 
-// Get conversations
+// Lấy danh sách cuộc trò chuyện
 $sql = "SELECT 
             u.id, u.username, u.avatar, 
             MAX(m.created_at) as last_message_time,
@@ -27,14 +27,14 @@ $stmt->bind_param("iiiiii", $user_id, $user_id, $user_id, $user_id, $user_id, $u
 $stmt->execute();
 $conversations = $stmt->get_result();
 
-// Get selected conversation if any
+// Lấy cuộc trò chuyện đã chọn (nếu có)
 $selected_user = null;
 $messages = null;
 
 if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
     $selected_user_id = (int)$_GET['user_id'];
     
-    // Get user info
+    // Lấy thông tin người dùng
     $sql = "SELECT * FROM users WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $selected_user_id);
@@ -44,7 +44,7 @@ if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
     if ($result->num_rows > 0) {
         $selected_user = $result->fetch_assoc();
         
-        // Get messages
+        // Lấy tin nhắn
         $sql = "SELECT m.*, 
                     CASE WHEN m.sender_id = ? THEN 1 ELSE 0 END as is_sent,
                     p.id as product_id, p.name as product_name, p.image as product_image,
@@ -58,7 +58,7 @@ if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
         $stmt->execute();
         $messages = $stmt->get_result();
         
-        // Mark messages as read
+        // Đánh dấu tin nhắn đã đọc
         $sql = "UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ii", $selected_user_id, $user_id);

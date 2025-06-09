@@ -1,5 +1,5 @@
 <?php
-// Function to sanitize input data
+// Hàm xử lý dữ liệu đầu vào
 function sanitize($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -7,23 +7,23 @@ function sanitize($data) {
     return $data;
 }
 
-// Function to check if user is logged in
+// Hàm kiểm tra người dùng đã đăng nhập chưa
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
 }
 
-// Function to check if user is admin
+// Hàm kiểm tra người dùng có phải admin không
 function isAdmin() {
     return isset($_SESSION['user_role']) && $_SESSION['user_role'] == 'admin';
 }
 
-// Function to redirect
+// Hàm chuyển hướng trang
 function redirect($url) {
     header("Location: $url");
     exit();
 }
 
-// Function to generate random string
+// Hàm tạo chuỗi ngẫu nhiên
 function generateRandomString($length = 10) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen($characters);
@@ -34,11 +34,11 @@ function generateRandomString($length = 10) {
     return $randomString;
 }
 
-// Function to upload image
+// Hàm tải lên hình ảnh
 function uploadImage($file, $folder) {
     $target_dir = "uploads/" . $folder . "/";
     
-    // Create directory if it doesn't exist
+    // Tạo thư mục nếu chưa tồn tại
     if (!file_exists($target_dir)) {
         mkdir($target_dir, 0777, true);
     }
@@ -47,18 +47,18 @@ function uploadImage($file, $folder) {
     $new_filename = generateRandomString() . "_" . time() . "." . $file_extension;
     $target_file = $target_dir . $new_filename;
     
-    // Check if image file is a actual image
+    // Kiểm tra file có phải là hình ảnh không
     $check = getimagesize($file["tmp_name"]);
     if($check === false) {
         return false;
     }
     
-    // Check file size (5MB max)
+    // Kiểm tra kích thước file (tối đa 5MB)
     if ($file["size"] > 5000000) {
         return false;
     }
     
-    // Allow certain file formats
+    // Cho phép các định dạng file
     if($file_extension != "jpg" && $file_extension != "png" && $file_extension != "jpeg" && $file_extension != "gif" ) {
         return false;
     }
@@ -70,12 +70,12 @@ function uploadImage($file, $folder) {
     }
 }
 
-// Function to format date
+// Hàm định dạng ngày tháng
 function formatDate($date) {
     return date("d/m/Y H:i", strtotime($date));
 }
 
-// Function to get user by ID
+// Hàm lấy thông tin người dùng theo ID
 function getUserById($conn, $id) {
     $sql = "SELECT * FROM users WHERE id = ?";
     $stmt = $conn->prepare($sql);
@@ -88,7 +88,7 @@ function getUserById($conn, $id) {
     return null;
 }
 
-// Function to get product by ID
+// Hàm lấy thông tin sản phẩm theo ID
 function getProductById($conn, $id) {
     $sql = "SELECT p.*, u.username, u.avatar FROM products p 
             JOIN users u ON p.user_id = u.id 
@@ -103,7 +103,7 @@ function getProductById($conn, $id) {
     return null;
 }
 
-// Function to send email
+// Hàm gửi email
 function sendEmail($to, $subject, $message) {
     $headers = "MIME-Version: 1.0" . "\r\n";
     $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";

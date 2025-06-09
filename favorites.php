@@ -3,19 +3,19 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if not logged in
+// Chuyển hướng nếu chưa đăng nhập
 if (!isLoggedIn()) {
     redirect('login.php');
 }
 
 $user_id = $_SESSION['user_id'];
 
-// Get favorites with pagination
+// Lấy danh sách yêu thích với phân trang
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 8;
 $offset = ($page - 1) * $limit;
 
-// Build query
+// Xây dựng truy vấn
 $sql = "SELECT p.*, u.username, u.avatar, f.created_at as favorited_at 
         FROM favorites f 
         JOIN products p ON f.product_id = p.id 
@@ -28,13 +28,13 @@ $count_sql = "SELECT COUNT(*) as total
               JOIN products p ON f.product_id = p.id 
               WHERE f.user_id = ? AND p.status = 'approved'";
 
-// Prepare and execute query
+// Chuẩn bị và thực thi truy vấn
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("iii", $user_id, $offset, $limit);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Get total count for pagination
+// Lấy tổng số lượng cho phân trang
 $count_stmt = $conn->prepare($count_sql);
 $count_stmt->bind_param("i", $user_id);
 $count_stmt->execute();
@@ -43,7 +43,7 @@ $count_row = $count_result->fetch_assoc();
 $total_favorites = $count_row['total'];
 $total_pages = ceil($total_favorites / $limit);
 
-// Format condition for display
+// Định dạng điều kiện để hiển thị
 $condition_display = [
     'new' => 'Mới',
     'like_new' => 'Như mới',

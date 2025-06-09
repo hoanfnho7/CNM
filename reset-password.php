@@ -3,7 +3,7 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if already logged in
+// Chuyển hướng nếu đã đăng nhập
 if (isLoggedIn()) {
     redirect('index.php');
 }
@@ -13,11 +13,11 @@ $success = false;
 $valid_token = false;
 $token = '';
 
-// Check if token is provided
+// Kiểm tra xem token có được cung cấp không
 if (isset($_GET['token'])) {
     $token = sanitize($_GET['token']);
     
-    // Validate token
+    // Xác thực token
     $sql = "SELECT pr.*, u.username, u.email FROM password_resets pr 
             JOIN users u ON pr.user_id = u.id 
             WHERE pr.token = ? AND pr.expires_at > NOW() AND pr.used = 0";
@@ -33,11 +33,11 @@ if (isset($_GET['token'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && $valid_token) {
-    // Get form data
+    // Lấy dữ liệu từ form
     $password = sanitize($_POST['password']);
     $confirm_password = sanitize($_POST['confirm_password']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($password)) {
         $errors[] = "Mật khẩu không được để trống";
     } elseif (strlen($password) < 6) {
@@ -48,24 +48,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $valid_token) {
         $errors[] = "Mật khẩu xác nhận không khớp";
     }
     
-    // If no errors, reset password
+    // Nếu không có lỗi, đặt lại mật khẩu
     if (empty($errors)) {
-        // Hash password
+        // Mã hóa mật khẩu
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
-        // Update user password
+        // Cập nhật mật khẩu người dùng
         $sql = "UPDATE users SET password = ? WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("si", $hashed_password, $reset_data['user_id']);
         
         if ($stmt->execute()) {
-            // Mark token as used
+            // Đánh dấu token đã sử dụng
             $sql = "UPDATE password_resets SET used = 1 WHERE id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("i", $reset_data['id']);
             $stmt->execute();
             
-            // Send confirmation email
+            // Gửi email xác nhận
             $subject = "Mật khẩu đã được đặt lại - SecondLife Market";
             $message = "
                 <html>

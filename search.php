@@ -3,7 +3,7 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Get search parameters
+// Lấy các tham số tìm kiếm
 $keyword = isset($_GET['keyword']) ? sanitize($_GET['keyword']) : '';
 $category = isset($_GET['category']) ? sanitize($_GET['category']) : '';
 $condition = isset($_GET['condition']) ? sanitize($_GET['condition']) : '';
@@ -11,7 +11,7 @@ $min_price = isset($_GET['min_price']) && is_numeric($_GET['min_price']) ? (int)
 $max_price = isset($_GET['max_price']) && is_numeric($_GET['max_price']) ? (int)$_GET['max_price'] : 0;
 $sort = isset($_GET['sort']) ? sanitize($_GET['sort']) : 'newest';
 
-// Build query
+// Xây dựng truy vấn
 $sql = "SELECT p.*, u.username, u.avatar FROM products p 
         JOIN users u ON p.user_id = u.id 
         WHERE p.status = 'approved'";
@@ -50,7 +50,7 @@ if ($max_price > 0) {
     $types .= "i";
 }
 
-// Add sorting
+// Thêm sắp xếp
 switch ($sort) {
     case 'price_asc':
         $sql .= " ORDER BY p.price ASC";
@@ -67,7 +67,7 @@ switch ($sort) {
         break;
 }
 
-// Prepare and execute query
+// Chuẩn bị và thực thi truy vấn
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -75,7 +75,7 @@ if (!empty($params)) {
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Format condition for display
+// Định dạng điều kiện để hiển thị
 $condition_display = [
     'new' => 'Mới',
     'like_new' => 'Như mới',
@@ -84,7 +84,7 @@ $condition_display = [
     'poor' => 'Kém'
 ];
 
-// Format category for display
+// Định dạng danh mục để hiển thị
 $category_display = [
     'electronics' => 'Điện tử',
     'furniture' => 'Nội thất',

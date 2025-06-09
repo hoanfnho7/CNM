@@ -4,9 +4,9 @@ include 'config/db.php';
 include 'config/google-config.php';
 include 'includes/functions.php';
 
-// Redirect if already logged in
+// Chuyển hướng nếu đã đăng nhập
 if (isLoggedIn()) {
-    // Check if user is admin and redirect to admin panel
+    // Kiểm tra nếu là admin thì chuyển hướng đến trang quản trị
     if (isAdmin()) {
         redirect('admin/index.php');
     } else {
@@ -16,7 +16,7 @@ if (isLoggedIn()) {
 
 $errors = [];
 
-// Handle error messages from Google OAuth
+// Xử lý thông báo lỗi từ Google OAuth
 if (isset($_GET['error'])) {
     switch ($_GET['error']) {
         case 'google_auth_failed':
@@ -41,11 +41,11 @@ if (isset($_GET['error'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Lấy dữ liệu từ form
     $email = sanitize($_POST['email']);
     $password = sanitize($_POST['password']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($email)) {
         $errors[] = "Email không được để trống";
     }
@@ -54,9 +54,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Mật khẩu không được để trống";
     }
     
-    // If no errors, attempt login
+    // Nếu không có lỗi, thực hiện đăng nhập
     if (empty($errors)) {
-        // Get user from database
+        // Lấy thông tin người dùng từ cơ sở dữ liệu
         $sql = "SELECT * FROM users WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $email);
@@ -66,26 +66,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $user = $result->fetch_assoc();
             
-            // Verify password
+            // Xác thực mật khẩu
             if (password_verify($password, $user['password'])) {
-                // Check if account is active
+                // Kiểm tra tài khoản có đang hoạt động không
                 if ($user['status'] !== 'active') {
                     $errors[] = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.";
                 } else {
-                    // Set session variables
+                    // Thiết lập các biến phiên
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['user_email'] = $user['email'];
                     $_SESSION['user_role'] = $user['role'];
                     $_SESSION['user_avatar'] = $user['avatar'];
                     
-                    // Update last login time
+                    // Cập nhật thời gian đăng nhập cuối
                     $sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("i", $user['id']);
                     $stmt->execute();
                     
-                    // Redirect based on role
+                    // Chuyển hướng dựa trên vai trò
                     if ($user['role'] == 'admin') {
                         redirect('admin/index.php');
                     } else {
@@ -101,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Get Google OAuth URL
+// Lấy URL đăng nhập Google
 $google_oauth_url = getGoogleOAuthURL();
 ?>
 <!DOCTYPE html>

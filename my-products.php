@@ -3,21 +3,21 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if not logged in
+// Chuyển hướng nếu chưa đăng nhập
 if (!isLoggedIn()) {
     redirect('login.php');
 }
 
 $user_id = $_SESSION['user_id'];
 
-// Get products with pagination
+// Lấy sản phẩm với phân trang
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 8;
 $offset = ($page - 1) * $limit;
 
 $status = isset($_GET['status']) ? sanitize($_GET['status']) : '';
 
-// Build query
+// Xây dựng truy vấn
 $sql = "SELECT * FROM products WHERE user_id = ?";
 $count_sql = "SELECT COUNT(*) as total FROM products WHERE user_id = ?";
 $params = [$user_id];
@@ -35,15 +35,15 @@ $params[] = $offset;
 $params[] = $limit;
 $types .= "ii";
 
-// Prepare and execute query
+// Chuẩn bị và thực thi truy vấn
 $stmt = $conn->prepare($sql);
 $stmt->bind_param($types, ...$params);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Get total count for pagination
+// Lấy tổng số lượng cho phân trang
 $count_stmt = $conn->prepare($count_sql);
-$count_types = substr($types, 0, -2); // Remove the last two parameters (offset and limit)
+$count_types = substr($types, 0, -2); // Xóa hai tham số cuối (offset và limit)
 $count_params = array_slice($params, 0, -2);
 $count_stmt->bind_param($count_types, ...$count_params);
 $count_stmt->execute();
@@ -52,7 +52,7 @@ $count_row = $count_result->fetch_assoc();
 $total_products = $count_row['total'];
 $total_pages = ceil($total_products / $limit);
 
-// Format condition for display
+// Định dạng điều kiện để hiển thị
 $condition_display = [
     'new' => 'Mới',
     'like_new' => 'Như mới',
@@ -61,7 +61,7 @@ $condition_display = [
     'poor' => 'Kém'
 ];
 
-// Format status for display
+// Định dạng trạng thái để hiển thị
 $status_display = [
     'pending' => '<span class="badge bg-warning">Chờ duyệt</span>',
     'approved' => '<span class="badge bg-success">Đã duyệt</span>',

@@ -3,7 +3,7 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if not logged in
+// Chuyển hướng nếu chưa đăng nhập
 if (!isLoggedIn()) {
     redirect('login.php');
 }
@@ -11,7 +11,7 @@ if (!isLoggedIn()) {
 $errors = [];
 $success = false;
 
-// Get user data
+// Lấy thông tin người dùng
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT * FROM users WHERE id = ?";
 $stmt = $conn->prepare($sql);
@@ -21,7 +21,7 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Lấy dữ liệu từ form
     $username = sanitize($_POST['username']);
     $phone = sanitize($_POST['phone']);
     $address = sanitize($_POST['address']);
@@ -29,14 +29,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $new_password = isset($_POST['new_password']) ? sanitize($_POST['new_password']) : '';
     $confirm_password = isset($_POST['confirm_password']) ? sanitize($_POST['confirm_password']) : '';
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($username)) {
         $errors[] = "Tên đăng nhập không được để trống";
     } elseif (strlen($username) < 3 || strlen($username) > 20) {
         $errors[] = "Tên đăng nhập phải từ 3 đến 20 ký tự";
     }
     
-    // Check if username already exists (if changed)
+    // Kiểm tra xem tên đăng nhập đã tồn tại chưa (nếu có thay đổi)
     if ($username !== $user['username']) {
         $sql = "SELECT * FROM users WHERE username = ? AND id != ?";
         $stmt = $conn->prepare($sql);
@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
     
-    // Validate password change if requested
+    // Xác thực thay đổi mật khẩu nếu được yêu cầu
     if (!empty($current_password) || !empty($new_password) || !empty($confirm_password)) {
         if (empty($current_password)) {
             $errors[] = "Vui lòng nhập mật khẩu hiện tại";
@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
     
-    // Handle avatar upload
+    // Xử lý tải lên ảnh đại diện
     $avatar = $user['avatar'];
     if (isset($_FILES['avatar']) && $_FILES['avatar']['size'] > 0) {
         $uploaded_avatar = uploadImage($_FILES['avatar'], 'avatars');
@@ -79,15 +79,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
     
-    // If no errors, update user
+    // Nếu không có lỗi, cập nhật thông tin người dùng
     if (empty($errors)) {
-        // Update user in database
+        // Cập nhật người dùng trong cơ sở dữ liệu
         $sql = "UPDATE users SET username = ?, phone = ?, address = ?, avatar = ? WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssssi", $username, $phone, $address, $avatar, $user_id);
         
         if ($stmt->execute()) {
-            // Update password if requested
+            // Cập nhật mật khẩu nếu được yêu cầu
             if (!empty($new_password)) {
                 $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
                 $sql = "UPDATE users SET password = ? WHERE id = ?";
@@ -96,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->execute();
             }
             
-            // Update session variables
+            // Cập nhật biến phiên
             $_SESSION['username'] = $username;
             $_SESSION['user_avatar'] = $avatar;
             

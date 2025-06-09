@@ -1,32 +1,32 @@
 <?php
 /**
- * Helper functions for system logging
+ * Các hàm hỗ trợ ghi log hệ thống
  */
 
 /**
- * Add a log entry to the system_logs table
+ * Thêm một bản ghi log vào bảng system_logs
  * 
- * @param string $log_type The type of log (info, warning, error, security, user, product)
- * @param string $message The log message
- * @param string $user_info Additional user information (optional)
- * @return bool True if log was added successfully, false otherwise
+ * @param string $log_type Loại log (info, warning, error, security, user, product)
+ * @param string $message Nội dung log
+ * @param string $user_info Thông tin người dùng bổ sung (tùy chọn)
+ * @return bool True nếu thêm log thành công, false nếu thất bại
  */
 function addLog($conn, $log_type, $message, $user_info = '') {
-    // Validate log type
+    // Xác thực loại log
     $valid_types = ['info', 'warning', 'error', 'security', 'user', 'product'];
     if (!in_array($log_type, $valid_types)) {
         $log_type = 'info';
     }
     
-    // Get user info if not provided
+    // Lấy thông tin người dùng nếu chưa được cung cấp
     if (empty($user_info) && isset($_SESSION['user_id'])) {
         $user_info = $_SESSION['username'] . ' (ID: ' . $_SESSION['user_id'] . ')';
     }
     
-    // Get IP address
+    // Lấy địa chỉ IP
     $ip_address = $_SERVER['REMOTE_ADDR'];
     
-    // Insert log entry
+    // Thêm bản ghi log
     $sql = "INSERT INTO system_logs (log_type, message, user_info, ip_address, created_at) 
             VALUES (?, ?, ?, ?, NOW())";
     $stmt = $conn->prepare($sql);
@@ -36,12 +36,12 @@ function addLog($conn, $log_type, $message, $user_info = '') {
 }
 
 /**
- * Add a user activity log
+ * Thêm log hoạt động người dùng
  * 
- * @param string $action The user action (register, login, update, etc.)
- * @param int $user_id The user ID
- * @param string $details Additional details (optional)
- * @return bool True if log was added successfully, false otherwise
+ * @param string $action Hành động của người dùng (đăng ký, đăng nhập, cập nhật, v.v.)
+ * @param int $user_id ID người dùng
+ * @param string $details Chi tiết bổ sung (tùy chọn)
+ * @return bool True nếu thêm log thành công, false nếu thất bại
  */
 function logUserActivity($conn, $action, $user_id, $details = '') {
     $user = getUserById($conn, $user_id);
@@ -58,13 +58,13 @@ function logUserActivity($conn, $action, $user_id, $details = '') {
 }
 
 /**
- * Add a product activity log
+ * Thêm log hoạt động sản phẩm
  * 
- * @param string $action The product action (create, update, delete, etc.)
- * @param int $product_id The product ID
- * @param int $user_id The user ID who performed the action
- * @param string $details Additional details (optional)
- * @return bool True if log was added successfully, false otherwise
+ * @param string $action Hành động với sản phẩm (tạo, cập nhật, xóa, v.v.)
+ * @param int $product_id ID sản phẩm
+ * @param int $user_id ID người dùng thực hiện hành động
+ * @param string $details Chi tiết bổ sung (tùy chọn)
+ * @return bool True nếu thêm log thành công, false nếu thất bại
  */
 function logProductActivity($conn, $action, $product_id, $user_id, $details = '') {
     $product = getProductById($conn, $product_id);
@@ -84,12 +84,12 @@ function logProductActivity($conn, $action, $product_id, $user_id, $details = ''
 }
 
 /**
- * Add a security log
+ * Thêm log bảo mật
  * 
- * @param string $action The security action (login, logout, failed login, etc.)
- * @param string $details Additional details
- * @param string $user_info User information (optional)
- * @return bool True if log was added successfully, false otherwise
+ * @param string $action Hành động bảo mật (đăng nhập, đăng xuất, đăng nhập thất bại, v.v.)
+ * @param string $details Chi tiết bổ sung
+ * @param string $user_info Thông tin người dùng (tùy chọn)
+ * @return bool True nếu thêm log thành công, false nếu thất bại
  */
 function logSecurityActivity($conn, $action, $details, $user_info = '') {
     $message = "Security: $action - $details";
@@ -98,11 +98,11 @@ function logSecurityActivity($conn, $action, $details, $user_info = '') {
 }
 
 /**
- * Add an error log
+ * Thêm log lỗi
  * 
- * @param string $error The error message
- * @param string $source The error source (file, function, etc.)
- * @return bool True if log was added successfully, false otherwise
+ * @param string $error Thông báo lỗi
+ * @param string $source Nguồn gốc lỗi (tệp, hàm, v.v.)
+ * @return bool True nếu thêm log thành công, false nếu thất bại
  */
 function logError($conn, $error, $source = '') {
     $message = "Error";

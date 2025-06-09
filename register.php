@@ -3,7 +3,7 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if already logged in
+// Chuyển hướng nếu đã đăng nhập
 if (isLoggedIn()) {
     redirect('index.php');
 }
@@ -12,19 +12,19 @@ $errors = [];
 $success = false;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Lấy dữ liệu từ form
     $username = sanitize($_POST['username']);
     $email = sanitize($_POST['email']);
     $password = sanitize($_POST['password']);
     $confirm_password = sanitize($_POST['confirm_password']);
     $phone = sanitize($_POST['phone']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($username)) {
-    $errors[] = "Tên đăng nhập không được để trống";
-} elseif (strlen($username) < 3 || strlen($username) > 20) {
-    $errors[] = "Tên đăng nhập phải từ 3 đến 20 ký tự";
-}
+        $errors[] = "Tên đăng nhập không được để trống";
+    } elseif (strlen($username) < 3 || strlen($username) > 20) {
+        $errors[] = "Tên đăng nhập phải từ 3 đến 20 ký tự";
+    }
 
     
     if (empty($email)) {
@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Số điện thoại phải có 10-11 chữ số";
     }
     
-    // Check if username or email already exists
+    // Kiểm tra xem tên đăng nhập hoặc email đã tồn tại chưa
     $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ss", $username, $email);
@@ -66,18 +66,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
     
-    // If no errors, register user
+    // Nếu không có lỗi, đăng ký người dùng
     if (empty($errors)) {
-        // Hash password
+        // Mã hóa mật khẩu
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
-        // Insert user into database
+        // Thêm người dùng vào cơ sở dữ liệu
         $sql = "INSERT INTO users (username, email, password, phone, role, created_at) VALUES (?, ?, ?, ?, 'user', NOW())";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ssss", $username, $email, $hashed_password, $phone);
         
         if ($stmt->execute()) {
-            // Send welcome email
+            // Gửi email chào mừng
             $subject = "Chào mừng đến với 2HandShop";
             $message = "
                 <html>

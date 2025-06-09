@@ -3,7 +3,7 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if not logged in
+// Chuyển hướng nếu chưa đăng nhập
 if (!isLoggedIn()) {
     redirect('login.php');
 }
@@ -13,14 +13,14 @@ $success = false;
 $product_id = 0;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Lấy dữ liệu từ form
     $name = sanitize($_POST['name']);
     $description = sanitize($_POST['description']);
     $price = sanitize($_POST['price']);
     $category = sanitize($_POST['category']);
     $condition = sanitize($_POST['condition']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($name)) {
         $errors[] = "Tên sản phẩm không được để trống";
     }
@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Tình trạng sản phẩm không được để trống";
     }
     
-    // Handle image upload
+    // Xử lý tải lên hình ảnh
     $image = '';
     if (isset($_FILES['image']) && $_FILES['image']['size'] > 0) {
         $uploaded_image = uploadImage($_FILES['image'], 'products');
@@ -56,12 +56,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Vui lòng tải lên hình ảnh sản phẩm";
     }
     
-    // If no errors, create product
+    // Nếu không có lỗi, tạo sản phẩm
     if (empty($errors)) {
         $user_id = $_SESSION['user_id'];
-        $status = isAdmin() ? 'approved' : 'pending'; // Auto-approve if admin
+        $status = isAdmin() ? 'approved' : 'pending'; // Tự động duyệt nếu là admin
         
-        // Insert product into database
+        // Thêm sản phẩm vào cơ sở dữ liệu
         $sql = "INSERT INTO products (user_id, name, description, price, category, `condition`, image, status, created_at) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         $stmt = $conn->prepare($sql);

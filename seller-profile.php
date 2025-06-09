@@ -3,14 +3,14 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Check if seller ID is provided
+// Kiểm tra xem ID người bán đã được cung cấp chưa
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     redirect('index.php');
 }
 
 $seller_id = (int)$_GET['id'];
 
-// Get seller info
+// Lấy thông tin người bán
 $sql = "SELECT * FROM users WHERE id = ? AND status = 'active'";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $seller_id);
@@ -23,22 +23,22 @@ if ($result->num_rows == 0) {
 
 $seller = $result->fetch_assoc();
 
-// Get seller's products with pagination
+// Lấy sản phẩm của người bán với phân trang
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 8;
 $offset = ($page - 1) * $limit;
 
-// Build query
+// Xây dựng truy vấn
 $sql = "SELECT * FROM products WHERE user_id = ? AND status = 'approved' ORDER BY created_at DESC LIMIT ?, ?";
 $count_sql = "SELECT COUNT(*) as total FROM products WHERE user_id = ? AND status = 'approved'";
 
-// Prepare and execute query
+// Chuẩn bị và thực thi truy vấn
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("iii", $seller_id, $offset, $limit);
 $stmt->execute();
 $products = $stmt->get_result();
 
-// Get total count for pagination
+// Lấy tổng số lượng sản phẩm để phân trang
 $count_stmt = $conn->prepare($count_sql);
 $count_stmt->bind_param("i", $seller_id);
 $count_stmt->execute();
@@ -47,7 +47,7 @@ $count_row = $count_result->fetch_assoc();
 $total_products = $count_row['total'];
 $total_pages = ceil($total_products / $limit);
 
-// Format condition for display
+// Định dạng điều kiện để hiển thị
 $condition_display = [
     'new' => 'Mới',
     'like_new' => 'Như mới',

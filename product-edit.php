@@ -3,12 +3,12 @@ session_start();
 include 'config/db.php';
 include 'includes/functions.php';
 
-// Redirect if not logged in
+// Chuyển hướng nếu chưa đăng nhập
 if (!isLoggedIn()) {
     redirect('login.php');
 }
 
-// Check if product ID is provided
+// Kiểm tra xem ID sản phẩm đã được cung cấp chưa
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     redirect('my-products.php');
 }
@@ -16,14 +16,14 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $product_id = (int)$_GET['id'];
 $user_id = $_SESSION['user_id'];
 
-// Get product data
+// Lấy thông tin sản phẩm
 $sql = "SELECT * FROM products WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ii", $product_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-// If product doesn't exist or doesn't belong to user
+// Nếu sản phẩm không tồn tại hoặc không thuộc về người dùng
 if ($result->num_rows == 0) {
     redirect('my-products.php');
 }
@@ -35,17 +35,17 @@ $success = false;
 $debug_info = [];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $debug_info[] = "Form submitted";
-    $debug_info[] = "Original image in DB: " . $product['image'];
+    $debug_info[] = "Form đã được gửi";
+    $debug_info[] = "Hình ảnh gốc trong DB: " . $product['image'];
     
-    // Get form data
+    // Lấy dữ liệu từ form
     $name = sanitize($_POST['name']);
     $description = sanitize($_POST['description']);
     $price = sanitize($_POST['price']);
     $category = sanitize($_POST['category']);
     $condition = sanitize($_POST['condition']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($name)) {
         $errors[] = "Tên sản phẩm không được để trống";
     }
@@ -68,33 +68,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Tình trạng sản phẩm không được để trống";
     }
     
-    // Handle image upload - FIXED LOGIC
-    $final_image = $product['image']; // Keep existing image as default
-    $debug_info[] = "Initial final_image: " . $final_image;
+    // Xử lý tải lên hình ảnh - ĐÃ SỬA LOGIC
+    $final_image = $product['image']; // Giữ hình ảnh hiện tại làm mặc định
+    $debug_info[] = "Hình ảnh cuối cùng ban đầu: " . $final_image;
     
-    // Only process if new image is uploaded
+    // Chỉ xử lý nếu có hình ảnh mới được tải lên
     if (isset($_FILES['image']) && $_FILES['image']['size'] > 0) {
-        $debug_info[] = "New image detected, processing upload...";
+        $debug_info[] = "Phát hiện hình ảnh mới, đang xử lý tải lên...";
         $uploaded_image = uploadImage($_FILES['image'], 'products');
         if ($uploaded_image) {
-            $debug_info[] = "Upload successful: " . $uploaded_image;
-            // Delete old image if exists and different from new one
+            $debug_info[] = "Tải lên thành công: " . $uploaded_image;
+            // Xóa hình ảnh cũ nếu tồn tại và khác với hình ảnh mới
             if ($product['image'] && $product['image'] !== $uploaded_image && file_exists("uploads/products/" . $product['image'])) {
                 unlink("uploads/products/" . $product['image']);
-                $debug_info[] = "Deleted old image: " . $product['image'];
+                $debug_info[] = "Đã xóa hình ảnh cũ: " . $product['image'];
             }
             $final_image = $uploaded_image;
         } else {
             $errors[] = "Không thể tải lên hình ảnh sản phẩm. Vui lòng thử lại.";
-            $debug_info[] = "Upload failed";
+            $debug_info[] = "Tải lên thất bại";
         }
     } else {
-        $debug_info[] = "No new image uploaded, keeping existing: " . $final_image;
+        $debug_info[] = "Không có hình ảnh mới được tải lên, giữ nguyên hình ảnh hiện tại: " . $final_image;
     }
     
-    $debug_info[] = "Final image to save: " . $final_image;
+    $debug_info[] = "Hình ảnh cuối cùng để lưu: " . $final_image;
     
-    // If no errors, update product
+    // Nếu không có lỗi, cập nhật sản phẩm
     if (empty($errors)) {
         // FIXED: Make sure we're using the right variable and data types
         $sql = "UPDATE products SET name = ?, description = ?, price = ?, category = ?, `condition` = ?, image = ?, updated_at = NOW() WHERE id = ? AND user_id = ?";
@@ -107,10 +107,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $debug_info[] = "Binding: name=$name, desc=$description, price=$price, cat=$category, cond=$condition, img=$final_image, id=$product_id, uid=$user_id";
         
         if ($stmt->execute()) {
-            $debug_info[] = "Database update successful";
+            $debug_info[] = "Cập nhật cơ sở dữ liệu thành công";
             $success = true;
             
-            // Refresh product data from database to verify
+            // Làm mới dữ liệu sản phẩm từ cơ sở dữ liệu để xác minh
             $verify_sql = "SELECT * FROM products WHERE id = ?";
             $verify_stmt = $conn->prepare($verify_sql);
             $verify_stmt->bind_param("i", $product_id);
@@ -118,13 +118,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $verify_result = $verify_stmt->get_result();
             $updated_product = $verify_result->fetch_assoc();
             
-            $debug_info[] = "Verified image in DB after update: " . $updated_product['image'];
+            $debug_info[] = "Hình ảnh đã xác minh trong DB sau khi cập nhật: " . $updated_product['image'];
             
-            // Update product array with fresh data
+            // Cập nhật mảng sản phẩm với dữ liệu mới
             $product = $updated_product;
         } else {
             $errors[] = "Đã xảy ra lỗi khi cập nhật database: " . $conn->error;
-            $debug_info[] = "Database update failed: " . $conn->error;
+            $debug_info[] = "Cập nhật cơ sở dữ liệu thất bại: " . $conn->error;
         }
     }
 }
