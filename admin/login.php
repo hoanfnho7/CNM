@@ -3,7 +3,7 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if already logged in as admin
+// Chuyển hướng nếu đã đăng nhập với tư cách admin
 if (isLoggedIn() && isAdmin()) {
     redirect('index.php');
 }
@@ -11,11 +11,11 @@ if (isLoggedIn() && isAdmin()) {
 $errors = [];
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Lấy dữ liệu từ form
     $email = sanitize($_POST['email']);
     $password = sanitize($_POST['password']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($email)) {
         $errors[] = "Email không được để trống";
     }
@@ -24,9 +24,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Mật khẩu không được để trống";
     }
     
-    // If no errors, attempt login
+    // Nếu không có lỗi, thử đăng nhập
     if (empty($errors)) {
-        // Get user from database
+        // Lấy thông tin người dùng từ cơ sở dữ liệu
         $sql = "SELECT * FROM users WHERE email = ? AND role = 'admin'";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $email);
@@ -36,26 +36,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($result->num_rows > 0) {
             $user = $result->fetch_assoc();
             
-            // Verify password
+            // Xác thực mật khẩu
             if (password_verify($password, $user['password'])) {
-                // Check if account is active
+                // Kiểm tra tài khoản có đang hoạt động không
                 if ($user['status'] !== 'active') {
                     $errors[] = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên khác.";
                 } else {
-                    // Set session variables
+                    // Thiết lập các biến phiên
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['user_email'] = $user['email'];
                     $_SESSION['user_role'] = $user['role'];
                     $_SESSION['user_avatar'] = $user['avatar'];
                     
-                    // Update last login time
+                    // Cập nhật thời gian đăng nhập cuối
                     $sql = "UPDATE users SET last_login = NOW() WHERE id = ?";
                     $stmt = $conn->prepare($sql);
                     $stmt->bind_param("i", $user['id']);
                     $stmt->execute();
                     
-                    // Log admin login
+                    // Ghi log đăng nhập admin
                     $sql = "INSERT INTO system_logs (log_type, message, user_info, ip_address, created_at) 
                             VALUES ('security', 'Admin login successful', ?, ?, NOW())";
                     $stmt = $conn->prepare($sql);
@@ -64,13 +64,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->bind_param("ss", $user_info, $ip);
                     $stmt->execute();
                     
-                    // Redirect to admin dashboard
+                    // Chuyển hướng đến trang quản trị
                     redirect('index.php');
                 }
             } else {
                 $errors[] = "Email hoặc mật khẩu không đúng";
                 
-                // Log failed login attempt
+                // Ghi log đăng nhập thất bại
                 $sql = "INSERT INTO system_logs (log_type, message, user_info, ip_address, created_at) 
                         VALUES ('security', 'Failed admin login attempt', ?, ?, NOW())";
                 $stmt = $conn->prepare($sql);
@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $errors[] = "Email hoặc mật khẩu không đúng";
             
-            // Log failed login attempt
+            // Ghi log đăng nhập thất bại
             $sql = "INSERT INTO system_logs (log_type, message, user_info, ip_address, created_at) 
                     VALUES ('security', 'Failed admin login attempt', ?, ?, NOW())";
             $stmt = $conn->prepare($sql);

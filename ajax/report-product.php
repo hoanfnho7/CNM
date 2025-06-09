@@ -3,13 +3,13 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Check if user is logged in
+// Kiểm tra xem người dùng đã đăng nhập chưa
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện chức năng này']);
     exit;
 }
 
-// Check if product ID and reason are provided
+// Kiểm tra xem ID sản phẩm và lý do có được cung cấp không
 if (!isset($_POST['product_id']) || !is_numeric($_POST['product_id']) || !isset($_POST['reason']) || empty($_POST['reason'])) {
     echo json_encode(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
     exit;
@@ -20,7 +20,7 @@ $product_id = (int)$_POST['product_id'];
 $reason = sanitize($_POST['reason']);
 $description = isset($_POST['description']) ? sanitize($_POST['description']) : '';
 
-// Check if product exists
+// Kiểm tra xem sản phẩm có tồn tại không
 $sql = "SELECT * FROM products WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $product_id);
@@ -32,7 +32,7 @@ if ($result->num_rows == 0) {
     exit;
 }
 
-// Check if user has already reported this product
+// Kiểm tra xem người dùng đã báo cáo sản phẩm này chưa
 $sql = "SELECT * FROM reports WHERE user_id = ? AND product_id = ? AND status = 'pending'";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ii", $user_id, $product_id);
@@ -44,7 +44,7 @@ if ($result->num_rows > 0) {
     exit;
 }
 
-// Insert report
+// Thêm báo cáo
 $sql = "INSERT INTO reports (user_id, product_id, reason, description, created_at) VALUES (?, ?, ?, ?, NOW())";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("iiss", $user_id, $product_id, $reason, $description);

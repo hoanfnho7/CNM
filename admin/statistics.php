@@ -3,26 +3,26 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if not admin
+// Chuyển hướng nếu không phải admin
 if (!isAdmin()) {
     redirect('../index.php');
 }
 
-// Get date range
+// Lấy khoảng thời gian
 $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
 $end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
 
-// Validate dates
+// Xác thực ngày tháng
 if (strtotime($start_date) > strtotime($end_date)) {
     $temp = $start_date;
     $start_date = $end_date;
     $end_date = $temp;
 }
 
-// Add one day to end_date for inclusive queries
+// Thêm một ngày vào end_date để truy vấn bao gồm cả ngày cuối
 $end_date_query = date('Y-m-d', strtotime($end_date . ' +1 day'));
 
-// Get statistics
+// Lấy thống kê
 $stats = [
     'total_users' => 0,
     'total_products' => 0,
@@ -33,7 +33,7 @@ $stats = [
     'total_reports' => 0
 ];
 
-// Total users
+// Tổng số người dùng
 $sql = "SELECT COUNT(*) as count FROM users WHERE created_at BETWEEN ? AND ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $start_date, $end_date_query);
@@ -44,7 +44,7 @@ if ($result->num_rows > 0) {
     $stats['total_users'] = $row['count'];
 }
 
-// Total products
+// Tổng số sản phẩm
 $sql = "SELECT COUNT(*) as count FROM products WHERE created_at BETWEEN ? AND ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $start_date, $end_date_query);
@@ -55,7 +55,7 @@ if ($result->num_rows > 0) {
     $stats['total_products'] = $row['count'];
 }
 
-// Total sold products
+// Tổng số sản phẩm đã bán
 $sql = "SELECT COUNT(*) as count FROM products WHERE status = 'sold' AND updated_at BETWEEN ? AND ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $start_date, $end_date_query);
@@ -66,7 +66,7 @@ if ($result->num_rows > 0) {
     $stats['total_sold'] = $row['count'];
 }
 
-// Total pending products
+// Tổng số sản phẩm đang chờ duyệt
 $sql = "SELECT COUNT(*) as count FROM products WHERE status = 'pending' AND created_at BETWEEN ? AND ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $start_date, $end_date_query);
@@ -77,7 +77,7 @@ if ($result->num_rows > 0) {
     $stats['total_pending'] = $row['count'];
 }
 
-// Total messages
+// Tổng số tin nhắn
 $sql = "SELECT COUNT(*) as count FROM messages WHERE created_at BETWEEN ? AND ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $start_date, $end_date_query);
@@ -88,7 +88,7 @@ if ($result->num_rows > 0) {
     $stats['total_messages'] = $row['count'];
 }
 
-// Total favorites
+// Tổng số lượt yêu thích
 $sql = "SELECT COUNT(*) as count FROM favorites WHERE created_at BETWEEN ? AND ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $start_date, $end_date_query);
@@ -99,7 +99,7 @@ if ($result->num_rows > 0) {
     $stats['total_favorites'] = $row['count'];
 }
 
-// Total reports
+// Tổng số báo cáo
 $sql = "SELECT COUNT(*) as count FROM reports WHERE created_at BETWEEN ? AND ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ss", $start_date, $end_date_query);
@@ -110,7 +110,7 @@ if ($result->num_rows > 0) {
     $stats['total_reports'] = $row['count'];
 }
 
-// Get daily user registrations
+// Lấy số liệu đăng ký người dùng hàng ngày
 $sql = "SELECT DATE(created_at) as date, COUNT(*) as count FROM users 
         WHERE created_at BETWEEN ? AND ? 
         GROUP BY DATE(created_at) 
@@ -120,7 +120,7 @@ $stmt->bind_param("ss", $start_date, $end_date_query);
 $stmt->execute();
 $user_registrations = $stmt->get_result();
 
-// Get daily product listings
+// Lấy số liệu đăng sản phẩm hàng ngày
 $sql = "SELECT DATE(created_at) as date, COUNT(*) as count FROM products 
         WHERE created_at BETWEEN ? AND ? 
         GROUP BY DATE(created_at) 
@@ -130,7 +130,7 @@ $stmt->bind_param("ss", $start_date, $end_date_query);
 $stmt->execute();
 $product_listings = $stmt->get_result();
 
-// Get product categories distribution
+// Lấy phân bố danh mục sản phẩm
 $sql = "SELECT category, COUNT(*) as count FROM products 
         WHERE created_at BETWEEN ? AND ? 
         GROUP BY category 
@@ -140,7 +140,7 @@ $stmt->bind_param("ss", $start_date, $end_date_query);
 $stmt->execute();
 $category_distribution = $stmt->get_result();
 
-// Get top users by product count
+// Lấy top người bán hàng theo số lượng sản phẩm
 $sql = "SELECT u.id, u.username, COUNT(p.id) as product_count 
         FROM users u 
         JOIN products p ON u.id = p.user_id 
@@ -153,7 +153,7 @@ $stmt->bind_param("ss", $start_date, $end_date_query);
 $stmt->execute();
 $top_sellers = $stmt->get_result();
 
-// Format category for display
+// Định dạng danh mục để hiển thị
 $category_display = [
     'electronics' => 'Điện tử',
     'furniture' => 'Nội thất',
@@ -163,11 +163,11 @@ $category_display = [
     'others' => 'Khác'
 ];
 
-// Prepare data for charts
+// Chuẩn bị dữ liệu cho biểu đồ
 $user_data = [];
 $product_data = [];
 
-// Initialize arrays with all dates in range
+// Khởi tạo mảng với tất cả các ngày trong khoảng
 $period = new DatePeriod(
     new DateTime($start_date),
     new DateInterval('P1D'),
@@ -180,7 +180,7 @@ foreach ($period as $date) {
     $product_data[$date_str] = 0;
 }
 
-// Fill in actual data
+// Điền dữ liệu thực tế
 while ($row = $user_registrations->fetch_assoc()) {
     $user_data[$row['date']] = (int)$row['count'];
 }
@@ -189,14 +189,14 @@ while ($row = $product_listings->fetch_assoc()) {
     $product_data[$row['date']] = (int)$row['count'];
 }
 
-// Convert to JSON for charts
+// Chuyển đổi thành JSON cho biểu đồ
 $user_data_json = json_encode(array_values($user_data));
 $product_data_json = json_encode(array_values($product_data));
 $dates_json = json_encode(array_map(function($date) {
     return date('d/m', strtotime($date));
 }, array_keys($user_data)));
 
-// Prepare category data for pie chart
+// Chuẩn bị dữ liệu danh mục cho biểu đồ tròn
 $category_labels = [];
 $category_counts = [];
 

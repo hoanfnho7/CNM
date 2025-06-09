@@ -3,12 +3,12 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if not admin
+// Chuyển hướng nếu không phải admin
 if (!isAdmin()) {
     redirect('../index.php');
 }
 
-// Handle product status change
+// Xử lý thay đổi trạng thái sản phẩm
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $action = $_GET['action'];
     $product_id = (int)$_GET['id'];
@@ -24,19 +24,19 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         $stmt->bind_param("i", $product_id);
         $stmt->execute();
     } elseif ($action == 'delete') {
-        // Delete product's favorites
+        // Xóa yêu thích của sản phẩm
         $sql = "DELETE FROM favorites WHERE product_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $product_id);
         $stmt->execute();
         
-        // Delete product's reports
+        // Xóa báo cáo của sản phẩm
         $sql = "DELETE FROM reports WHERE product_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $product_id);
         $stmt->execute();
         
-        // Delete product
+        // Xóa sản phẩm
         $sql = "DELETE FROM products WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $product_id);
@@ -46,7 +46,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     redirect('products.php');
 }
 
-// Get products with pagination
+// Lấy sản phẩm với phân trang
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 10;
 $offset = ($page - 1) * $limit;
@@ -55,7 +55,7 @@ $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
 $status = isset($_GET['status']) ? sanitize($_GET['status']) : '';
 $category = isset($_GET['category']) ? sanitize($_GET['category']) : '';
 
-// Build query
+// Xây dựng truy vấn
 $sql = "SELECT p.*, u.username FROM products p JOIN users u ON p.user_id = u.id WHERE 1=1";
 $count_sql = "SELECT COUNT(*) as total FROM products p JOIN users u ON p.user_id = u.id WHERE 1=1";
 $params = [];
@@ -90,7 +90,7 @@ $params[] = $offset;
 $params[] = $limit;
 $types .= "ii";
 
-// Prepare and execute query
+// Chuẩn bị và thực thi truy vấn
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -98,10 +98,10 @@ if (!empty($params)) {
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Get total count for pagination
+// Lấy tổng số lượng cho phân trang
 $count_stmt = $conn->prepare($count_sql);
 if (!empty($params)) {
-    // Remove the last two parameters (offset and limit)
+    // Xóa hai tham số cuối (offset và limit)
     array_pop($params);
     array_pop($params);
     if (!empty($params)) {
@@ -114,7 +114,7 @@ $count_row = $count_result->fetch_assoc();
 $total_products = $count_row['total'];
 $total_pages = ceil($total_products / $limit);
 
-// Format condition for display
+// Định dạng điều kiện để hiển thị
 $condition_display = [
     'new' => 'Mới',
     'like_new' => 'Như mới',
@@ -123,7 +123,7 @@ $condition_display = [
     'poor' => 'Kém'
 ];
 
-// Format category for display
+// Định dạng danh mục để hiển thị
 $category_display = [
     'electronics' => 'Điện tử',
     'furniture' => 'Nội thất',

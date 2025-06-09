@@ -3,7 +3,7 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if not admin
+// Chuyển hướng nếu không phải admin
 if (!isAdmin()) {
     redirect('../index.php');
 }
@@ -11,7 +11,7 @@ if (!isAdmin()) {
 $errors = [];
 $success = false;
 
-// Get current settings
+// Lấy cài đặt hiện tại
 $settings = [];
 $sql = "SELECT * FROM settings";
 $result = $conn->query($sql);
@@ -21,10 +21,10 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Default settings if not in database
+// Cài đặt mặc định nếu không có trong cơ sở dữ liệu
 $default_settings = [
     'site_name' => 'SecondLife Market',
-    'site_description' => 'Nền tảng mua bán đồ cũ uy tín, an toàn và ti��n lợi',
+    'site_description' => 'Nền tảng mua bán đồ cũ uy tín, an toàn và tiện lợi',
     'admin_email' => 'admin@secondlifemarket.com',
     'items_per_page' => '12',
     'maintenance_mode' => '0',
@@ -36,7 +36,7 @@ $default_settings = [
     'footer_text' => '&copy; ' . date('Y') . ' SecondLife Market. All rights reserved.'
 ];
 
-// Merge with defaults
+// Kết hợp với cài đặt mặc định
 foreach ($default_settings as $key => $value) {
     if (!isset($settings[$key])) {
         $settings[$key] = $value;
@@ -44,7 +44,7 @@ foreach ($default_settings as $key => $value) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Lấy dữ liệu từ form
     $site_name = sanitize($_POST['site_name']);
     $site_description = sanitize($_POST['site_description']);
     $admin_email = sanitize($_POST['admin_email']);
@@ -57,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $enable_reports = isset($_POST['enable_reports']) ? '1' : '0';
     $footer_text = sanitize($_POST['footer_text']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($site_name)) {
         $errors[] = "Tên trang web không được để trống";
     }
@@ -72,9 +72,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Số mục trên mỗi trang phải là số dương";
     }
     
-    // If no errors, update settings
+    // Nếu không có lỗi, cập nhật cài đặt
     if (empty($errors)) {
-        // Update settings in database
+        // Cập nhật cài đặt trong cơ sở dữ liệu
         $update_settings = [
             'site_name' => $site_name,
             'site_description' => $site_description,
@@ -99,7 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         $success = true;
         
-        // Update settings array
+        // Cập nhật mảng cài đặt
         $settings = $update_settings;
     }
 }

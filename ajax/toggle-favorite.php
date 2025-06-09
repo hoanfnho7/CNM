@@ -3,23 +3,23 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Enable error reporting for debugging
+// Bật báo cáo lỗi để gỡ lỗi
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Set content type to JSON
+// Đặt kiểu nội dung là JSON
 header('Content-Type: application/json');
 
-// Log the request for debugging
+// Ghi log yêu cầu để gỡ lỗi
 error_log("Favorite toggle request: " . print_r($_POST, true));
 
-// Check if user is logged in
+// Kiểm tra xem người dùng đã đăng nhập chưa
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện chức năng này']);
     exit;
 }
 
-// Check if product ID is provided
+// Kiểm tra xem ID sản phẩm có được cung cấp không
 if (!isset($_POST['product_id']) || !is_numeric($_POST['product_id'])) {
     echo json_encode(['success' => false, 'message' => 'ID sản phẩm không hợp lệ']);
     exit;
@@ -28,10 +28,10 @@ if (!isset($_POST['product_id']) || !is_numeric($_POST['product_id'])) {
 $user_id = $_SESSION['user_id'];
 $product_id = (int)$_POST['product_id'];
 
-// Log the IDs for debugging
+// Ghi log các ID để gỡ lỗi
 error_log("User ID: $user_id, Product ID: $product_id");
 
-// Check if product exists and is approved
+// Kiểm tra xem sản phẩm có tồn tại và đã được duyệt chưa
 $sql = "SELECT * FROM products WHERE id = ? AND status = 'approved'";
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -49,7 +49,7 @@ if ($result->num_rows == 0) {
     exit;
 }
 
-// Check if product is already in favorites
+// Kiểm tra xem sản phẩm đã có trong danh sách yêu thích chưa
 $sql = "SELECT * FROM favorites WHERE user_id = ? AND product_id = ?";
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -63,7 +63,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    // Remove from favorites
+    // Xóa khỏi danh sách yêu thích
     $sql = "DELETE FROM favorites WHERE user_id = ? AND product_id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $user_id, $product_id);
@@ -76,7 +76,7 @@ if ($result->num_rows > 0) {
         echo json_encode(['success' => false, 'message' => 'Đã xảy ra lỗi khi xóa. Vui lòng thử lại sau.']);
     }
 } else {
-    // Add to favorites
+    // Thêm vào danh sách yêu thích
     $sql = "INSERT INTO favorites (user_id, product_id, created_at) VALUES (?, ?, NOW())";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("ii", $user_id, $product_id);

@@ -3,13 +3,13 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Check if user is logged in
+// Kiểm tra xem người dùng đã đăng nhập chưa
 if (!isLoggedIn()) {
     echo json_encode(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện chức năng này']);
     exit;
 }
 
-// Check if receiver ID is provided
+// Kiểm tra xem ID người nhận có được cung cấp không
 if (!isset($_GET['receiver_id']) || !is_numeric($_GET['receiver_id'])) {
     echo json_encode(['success' => false, 'message' => 'ID người nhận không hợp lệ']);
     exit;
@@ -19,7 +19,7 @@ $user_id = $_SESSION['user_id'];
 $receiver_id = (int)$_GET['receiver_id'];
 $last_id = isset($_GET['last_id']) && is_numeric($_GET['last_id']) ? (int)$_GET['last_id'] : 0;
 
-// Get new messages
+// Lấy tin nhắn mới
 $sql = "SELECT m.*, 
             p.id as product_id, p.name as product_name, p.image as product_image,
             DATE(m.created_at) as date
@@ -46,7 +46,7 @@ while ($row = $result->fetch_assoc()) {
         'product_image' => $row['product_image']
     ];
     
-    // Mark as read if user is receiver
+    // Đánh dấu là đã đọc nếu người dùng là người nhận
     if ($row['receiver_id'] == $user_id && !$row['is_read']) {
         $update_sql = "UPDATE messages SET is_read = 1 WHERE id = ?";
         $update_stmt = $conn->prepare($update_sql);

@@ -3,12 +3,12 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if not admin
+// Chuyển hướng nếu không phải admin
 if (!isAdmin()) {
     redirect('../index.php');
 }
 
-// Handle report status change
+// Xử lý thay đổi trạng thái báo cáo
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $action = $_GET['action'];
     $report_id = (int)$_GET['id'];
@@ -26,19 +26,19 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     } elseif ($action == 'delete_product' && isset($_GET['product_id'])) {
         $product_id = (int)$_GET['product_id'];
         
-        // Delete product's favorites
+        // Xóa yêu thích của sản phẩm
         $sql = "DELETE FROM favorites WHERE product_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $product_id);
         $stmt->execute();
         
-        // Delete product's reports
+        // Xóa báo cáo của sản phẩm
         $sql = "DELETE FROM reports WHERE product_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $product_id);
         $stmt->execute();
         
-        // Delete product
+        // Xóa sản phẩm
         $sql = "DELETE FROM products WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $product_id);
@@ -48,14 +48,14 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     redirect('reports.php');
 }
 
-// Get reports with pagination
+// Lấy báo cáo với phân trang
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 10;
 $offset = ($page - 1) * $limit;
 
 $status = isset($_GET['status']) ? sanitize($_GET['status']) : '';
 
-// Build query
+// Xây dựng truy vấn
 $sql = "SELECT r.*, p.name as product_name, p.image as product_image, u.username as reporter_name 
         FROM reports r 
         JOIN products p ON r.product_id = p.id 
@@ -77,7 +77,7 @@ $params[] = $offset;
 $params[] = $limit;
 $types .= "ii";
 
-// Prepare and execute query
+// Chuẩn bị và thực thi truy vấn
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -85,10 +85,10 @@ if (!empty($params)) {
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Get total count for pagination
+// Lấy tổng số lượng cho phân trang
 $count_stmt = $conn->prepare($count_sql);
 if (!empty($params)) {
-    // Remove the last two parameters (offset and limit)
+    // Xóa hai tham số cuối cùng (offset và limit)
     array_pop($params);
     array_pop($params);
     if (!empty($params)) {

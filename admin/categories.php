@@ -3,7 +3,7 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if not admin
+// Chuyển hướng nếu không phải admin
 if (!isAdmin()) {
     redirect('../index.php');
 }
@@ -17,11 +17,11 @@ $category_slug = '';
 $category_icon = '';
 $category_description = '';
 
-// Handle category actions
+// Xử lý các hành động với danh mục
 if (isset($_GET['action'])) {
     $action = $_GET['action'];
     
-    // Edit category
+    // Sửa danh mục
     if ($action == 'edit' && isset($_GET['id']) && is_numeric($_GET['id'])) {
         $category_id = (int)$_GET['id'];
         $sql = "SELECT * FROM categories WHERE id = ?";
@@ -40,11 +40,11 @@ if (isset($_GET['action'])) {
         }
     }
     
-    // Delete category
+    // Xóa danh mục
     if ($action == 'delete' && isset($_GET['id']) && is_numeric($_GET['id'])) {
         $category_id = (int)$_GET['id'];
         
-        // Check if category has products
+        // Kiểm tra xem danh mục có sản phẩm không
         $sql = "SELECT COUNT(*) as count FROM products WHERE category = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $category_id);
@@ -68,39 +68,35 @@ if (isset($_GET['action'])) {
     }
 }
 
-// Handle form submission
+// Xử lý khi form được gửi
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get form data
+    // Lấy dữ liệu từ form
     $category_name = sanitize($_POST['name']);
     $category_slug = sanitize($_POST['slug']);
     $category_icon = sanitize($_POST['icon']);
     $category_description = sanitize($_POST['description']);
     
-    // Validate input
+    // Xác thực đầu vào
     if (empty($category_name)) {
         $errors[] = "Tên danh mục không được để trống";
     }
     
+    // Đảm bảo slug thân thiện với URL
     if (empty($category_slug)) {
         $errors[] = "Slug không được để trống";
     } else {
-        // Make sure slug is URL-friendly
         $category_slug = strtolower(str_replace(' ', '-', $category_slug));
     }
     
-    if (empty($category_icon)) {
-        $errors[] = "Icon không được để trống";
-    }
-    
-    // If no errors, save category
+    // Nếu không có lỗi, lưu danh mục
     if (empty($errors)) {
         if ($edit_mode) {
-            // Update existing category
+            // Cập nhật danh mục hiện có
             $sql = "UPDATE categories SET name = ?, slug = ?, icon = ?, description = ? WHERE id = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ssssi", $category_name, $category_slug, $category_icon, $category_description, $category_id);
         } else {
-            // Insert new category
+            // Thêm danh mục mới
             $sql = "INSERT INTO categories (name, slug, icon, description) VALUES (?, ?, ?, ?)";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("ssss", $category_name, $category_slug, $category_icon, $category_description);
@@ -108,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if ($stmt->execute()) {
             $success = true;
-            // Reset form
+            // Làm mới form
             if (!$edit_mode) {
                 $category_name = '';
                 $category_slug = '';
@@ -121,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Get all categories
+// Lấy tất cả danh mục
 $sql = "SELECT c.*, (SELECT COUNT(*) FROM products WHERE category = c.slug) as product_count FROM categories c ORDER BY c.name ASC";
 $result = $conn->query($sql);
 ?>

@@ -3,12 +3,12 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if not admin
+// Chuyển hướng nếu không phải admin
 if (!isAdmin()) {
     redirect('../index.php');
 }
 
-// Handle user status change
+// Xử lý thay đổi trạng thái người dùng
 if (isset($_GET['action']) && isset($_GET['id'])) {
     $action = $_GET['action'];
     $user_id = (int)$_GET['id'];
@@ -24,31 +24,31 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
     } elseif ($action == 'delete') {
-        // Delete user's products
+        // Xóa sản phẩm của người dùng
         $sql = "DELETE FROM products WHERE user_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         
-        // Delete user's messages
+        // Xóa tin nhắn của người dùng
         $sql = "DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ii", $user_id, $user_id);
         $stmt->execute();
         
-        // Delete user's favorites
+        // Xóa yêu thích của người dùng
         $sql = "DELETE FROM favorites WHERE user_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         
-        // Delete user's reports
+        // Xóa báo cáo của người dùng
         $sql = "DELETE FROM reports WHERE user_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         
-        // Delete user
+        // Xóa người dùng
         $sql = "DELETE FROM users WHERE id = ? AND role != 'admin'";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $user_id);
@@ -58,7 +58,7 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     redirect('users.php');
 }
 
-// Get users with pagination
+// Lấy người dùng với phân trang
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $limit = 10;
 $offset = ($page - 1) * $limit;
@@ -66,7 +66,7 @@ $offset = ($page - 1) * $limit;
 $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
 $status = isset($_GET['status']) ? sanitize($_GET['status']) : '';
 
-// Build query
+// Xây dựng truy vấn
 $sql = "SELECT * FROM users WHERE 1=1";
 $count_sql = "SELECT COUNT(*) as total FROM users WHERE 1=1";
 $params = [];
@@ -93,7 +93,7 @@ $params[] = $offset;
 $params[] = $limit;
 $types .= "ii";
 
-// Prepare and execute query
+// Chuẩn bị và thực thi truy vấn
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
     $stmt->bind_param($types, ...$params);
@@ -101,10 +101,10 @@ if (!empty($params)) {
 $stmt->execute();
 $result = $stmt->get_result();
 
-// Get total count for pagination
+// Lấy tổng số lượng cho phân trang
 $count_stmt = $conn->prepare($count_sql);
 if (!empty($params)) {
-    // Remove the last two parameters (offset and limit)
+    // Xóa hai tham số cuối cùng (offset và limit)
     array_pop($params);
     array_pop($params);
     if (!empty($params)) {

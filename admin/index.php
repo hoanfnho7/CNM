@@ -3,12 +3,12 @@ session_start();
 include '../config/db.php';
 include '../includes/functions.php';
 
-// Redirect if not admin
+// Chuyển hướng nếu không phải admin
 if (!isAdmin()) {
     redirect('../index.php');
 }
 
-// Get statistics
+// Lấy thống kê
 $stats = [
     'users' => 0,
     'products' => 0,
@@ -16,7 +16,7 @@ $stats = [
     'reports' => 0
 ];
 
-// Total users
+// Tổng số người dùng
 $sql = "SELECT COUNT(*) as count FROM users";
 $result = $conn->query($sql);
 if ($result->num_rows > 0) {
@@ -24,7 +24,7 @@ if ($result->num_rows > 0) {
     $stats['users'] = $row['count'];
 }
 
-// Total products
+// Tổng số sản phẩm
 $sql = "SELECT COUNT(*) as count FROM products";
 $result = $conn->query($sql);
 if ($result->num_rows > 0) {
@@ -32,7 +32,7 @@ if ($result->num_rows > 0) {
     $stats['products'] = $row['count'];
 }
 
-// Pending products
+// Sản phẩm chờ duyệt
 $sql = "SELECT COUNT(*) as count FROM products WHERE status = 'pending'";
 $result = $conn->query($sql);
 if ($result->num_rows > 0) {
@@ -40,7 +40,7 @@ if ($result->num_rows > 0) {
     $stats['pending_products'] = $row['count'];
 }
 
-// Total reports
+// Tổng số báo cáo
 $sql = "SELECT COUNT(*) as count FROM reports WHERE status = 'pending'";
 $result = $conn->query($sql);
 if ($result->num_rows > 0) {
@@ -48,11 +48,11 @@ if ($result->num_rows > 0) {
     $stats['reports'] = $row['count'];
 }
 
-// Recent users
+// Người dùng gần đây
 $sql = "SELECT * FROM users ORDER BY created_at DESC LIMIT 5";
 $recent_users = $conn->query($sql);
 
-// Recent products
+// Sản phẩm gần đây
 $sql = "SELECT p.*, u.username FROM products p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC LIMIT 5";
 $recent_products = $conn->query($sql);
 ?>
